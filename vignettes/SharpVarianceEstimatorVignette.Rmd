@@ -1,0 +1,199 @@
+---
+title: "SharpVarianceEstimatorVignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SharpVarianceEstimatorVignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(sharpvar)
+library(ggplot2)
+library(latex2exp)
+set.seed(123)
+```
+
+### Simple showcase of sharp variance bounds
+
+```{r}
+
+population <-sharpvar::create_dataset(1000,0.5,1)
+Y1 <- population$Y1
+Y0 <- population$Y0
+x <- population$X
+
+dat <- sharpvar::randomize(Y0,Y1,x,0.5)
+mod <- lm(Y_obs ~ treatment*I(X-mean(X)) , data=dat)
+
+
+conventional_var <- sharpvar::neyman_conventional(mod$residuals,dat$treatment)
+cs_var <- sharpvar::neyman_cs(mod$residuals,dat$treatment)
+sharp_var <-sharpvar::sharpvar(mod$residuals,dat$treatment,upper=TRUE)
+
+conv_cor <- sharpvar::cor_approx_conventional(mod$residuals,dat$treatment)
+sharp_cor <-sharpvar::cor_approx_sharp(mod$residuals,dat$treatment)
+cs_cor <- sharpvar::cor_approx_cs(mod$residuals,dat$treatment)
+ 
+```
+
+```{r}
+print(sharp_var/cs_var)
+print(sharp_var/conventional_var)
+
+```
+
+## Recreation of plots in (Mikhaeil, Green, 2024)
+
+### sweep over simulation parameter
+
+```{r}
+cs_var <- c()
+conventional_var <- c()
+true_te <- c()
+te_est <- c()
+sharp <- c()
+sharp_cor <- c()
+ney_cor <- c()
+cs_cor <-c()
+true_cor <- c()
+r2 <- c()
+sweep <-seq(0,1,0.2) 
+for (sd in sweep){
+population <-sharpvar::create_dataset(2000,sd)
+Y1 <- population$Y1
+Y0 <- population$Y0
+x <- population$X
+
+true_te <-c(true_te,mean(Y1) - mean(Y0))
+mod_1 <- lm(Y1 ~ I(x-mean(x)))
+mod_0 <- lm(Y0 ~ I(x-mean(x)))
+b1 <- coef(mod_1)["I(x - mean(x))"]
+b0 <- coef(mod_0)["I(x - mean(x))"]
+
+true_cor <- c(true_cor,cov(Y1-b1*(x-mean(x)),Y0-b0*(x-mean(x))))
+
+rep <- vapply(1:1000,function(i){  #100000
+  dat <- sharpvar::randomize(Y0,Y1,x,0.5)
+  mod <- lm(Y_obs ~ treatment*I(X-mean(X)) , data=dat)
+
+  r2_rand<-summary(mod)$r.squared
+  te_rand <- coef(mod)["treatment"]
+  var_conv <- sharpvar::neyman_conventional(mod$residuals,dat$treatment)
+  var_cs <- sharpvar::neyman_cs(mod$residuals,dat$treatment)
+  sharp_rand <-sharpvar::sharpvar(mod$residuals,dat$treatment)
+  
+  sharp_cor_r <- sharpvar::cor_approx_sharp(mod$residuals,dat$treatment)
+  ney_cor_r <- sharpvar::cor_approx_conventional(mod$residuals,dat$treatment)
+  cs_cor_r <- sharpvar::cor_approx_cs(mod$residuals,dat$treatment)
+  
+
+  list <- c(r2_rand,te_rand, var_conv , var_cs,sharp_rand, sharp_cor_r , ney_cor_r ,  cs_cor_r)
+},numeric(8))
+
+r2 <- c(r2,mean(rep[1,]))
+cs_var <- c(cs_var, mean(rep[4,]))
+conventional_var <- c(conventional_var, mean(rep[3,]))
+
+sharp <- c(sharp,mean(rep[5,]))
+te_est <- c(te_est,mean(rep[2,]))
+sharp_cor <- c(sharp_cor,mean(rep[6,]))
+ney_cor <- c(ney_cor,mean(rep[7,]))
+cs_cor <- c(cs_cor,mean(rep[8,]))
+}
+sd_sweep<- data.frame(s = sweep, sharp= sharp, cs_var = cs_var ,conventional_var = conventional_var,sharp_cor = sharp_cor,ney_cor = ney_cor, cs_cor = cs_cor , true_cor = true_cor, te_est = te_est,true_te = true_te)
+```
+
+```{r}
+
+ggplot(data=sd_sweep)+
+  
+    geom_line(aes(x=s,y=cs_cor),color="skyblue")+
+
+    geom_line(aes(x=s,y=true_cor),color="black")+
+    geom_line(aes(x=s,y=ney_cor),color="dodgerblue4")+
+    geom_line(aes(x=s,y=sharp_cor),color="cornflowerblue")+
+
+  theme_minimal()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"))+
+ylab(latex2exp::TeX("Estimate of the Cross Term")) +
+xlab(latex2exp::TeX("Simulation Parameter $\\theta$" ))+ theme(legend.position = "none")+
+annotate(geom="text", x=0.5, y=12.5, label="Conventional",color="dodgerblue4")+
+annotate(geom="text", x=0.5, y=6.5, label="Cauchy-Schwarz",color="skyblue")+
+annotate(geom="text", x=0.5, y=4, label="Sharp",color="cornflowerblue")+
+annotate(geom="text", x=0.5, y=1.8, label="True",color="black")+
+scale_x_continuous(expand = c(0,0.02),limits=c(0,1))+
+scale_y_continuous(expand = c(0,0.02),limits=c(0,15))
+
+```
+
+### Comparison of asymptotics of the bias for conventional, Cauchy-Schwarz and Sharp Variance estimator
+
+```{r}
+sweep_over_N <- function(N_up,noise_level){
+cs_var <- c()
+conventional_var <- c()
+true_var <- c()
+sharp <- c()
+r2 <- c()
+sweep <-seq(10,N_up,50) #10
+population <-sharpvar::create_dataset(N_up,0,noise_level)
+for (N in sweep){
+Y1 <-  population$Y1[1:N]
+Y0 <- population$Y0[1:N]
+x <- population$X[1:N]
+mod_1 <- lm(Y1 ~ I(x-mean(x)))
+mod_0 <- lm(Y0 ~ I(x-mean(x)))
+b1 <- coef(mod_1)["I(x - mean(x))"]
+b0 <- coef(mod_0)["I(x - mean(x))"]
+true_var <- c(true_var,sharpvar::var_true(mod_1$residuals,mod_0$residuals))
+rep <- vapply(1:1000,function(i){  #100000
+dat <- sharpvar::randomize(Y0,Y1,x,0.5)
+mod <- lm(Y_obs ~ treatment*I(X-mean(X)) , data=dat)
+r2_rand<-summary(mod)$r.squared
+var_conv <- sharpvar::neyman_conventional(mod$residuals,dat$treatment)
+var_cs <- sharpvar::neyman_cs(mod$residuals,dat$treatment)
+sharp_rand <-sharpvar::sharpvar(mod$residuals,dat$treatment)
+c(r2_rand, var_conv , var_cs,sharp_rand)
+},numeric(4))
+r2 <- c(r2,mean(rep[1,]))
+conventional_var <- c(conventional_var, mean(rep[2,]))
+cs_var <- c(cs_var, mean(rep[3,]))
+sharp <- c(sharp,mean(rep[4,]))
+}
+return(data.frame(s = sweep, sharp= sharp, cs_var = cs_var ,conventional_var = conventional_var, true = true_var,r2=r2,noise=noise_level))}
+```
+
+```{r}
+d_1 <- sweep_over_N(600,1)
+d_10 <- sweep_over_N(600,10)
+
+```
+
+```{r}
+ggplot(data=rbind(d_1,d_10))+
+    geom_line(aes(x=s,y=abs(conventional_var-true),group=noise),color="dodgerblue4")+
+    geom_line(aes(x=s,y=abs(cs_var-true),group=noise),color="skyblue")+
+    geom_line(aes(x=s,y=abs(sharp-true),group=noise),color="cornflowerblue")+
+    
+  theme_minimal()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"))+
+ylab(latex2exp::TeX("Log(Bias)")) +
+xlab(latex2exp::TeX("Sample Size $N$" ))+ theme(legend.position = "none")+
+annotate(geom="text", x=200, y=0.2, label=latex2exp::TeX("$R^2 = 0.03$" ),color="black")+
+annotate(geom="text", x=200, y=0.001, label=latex2exp::TeX("$R^2 = 0.35$" ),color="black")+
+
+scale_y_continuous(expand = c(0,0.02),trans="log",labels = scales::number_format(accuracy = 0.0001,decimal.mark = '.'),breaks=c(0.0001,0.001,0.01,0.1,1))+
+  
+scale_x_continuous(expand = c(0,.1),limit=c(0,510))
+
+```
