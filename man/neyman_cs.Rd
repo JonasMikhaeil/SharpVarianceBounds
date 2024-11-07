@@ -7,7 +7,7 @@
 neyman_cs(r_obs, Z)
 }
 \arguments{
-\item{r_obs}{The residuals of the outcome model,i.e, $Y_i(q) - \hat f_q(X_i)$.}
+\item{r_obs}{The residuals of the outcome model \eqn{Y_i(q) - \hat f_q(X_i)}.}
 
 \item{Z}{Vector of the treatment assignment.}
 }

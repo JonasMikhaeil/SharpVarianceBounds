@@ -2,20 +2,20 @@
 % Please edit documentation in R/varianceEstimators.R
 \name{sharpvar}
 \alias{sharpvar}
-\title{Estimation of Sharp Variance Bounds for two-arm Randomized Controlled
+\title{Estimation of Sharp Variance Bounds for Randomized Controlled
 Experiments.}
 \usage{
 sharpvar(r_obs, Z, upper = TRUE)
 }
 \arguments{
-\item{r_obs}{The residuals of the outcome model,i.e,\eqn{Y_i(q) - \hat f_q(X_i)}.}
+\item{r_obs}{The residuals of the outcome model \eqn{Y_i(q) - \hat f_q(X_i)}.}
 
 \item{Z}{Vector of the treatment assignment.}
 
 \item{upper}{Logical argument: Determines if upper (TRUE) or lower (FALSE) bounds will be calculated.}
 }
 \value{
-estimate of upper or lower sharp variance bound
+Estimate of upper or lower sharp variance bound
 }
 \description{
 This function calculates a consistent estimate of the sharp variance bound
@@ -23,8 +23,5 @@ for general regression-adjusted estimators of the average treatment
 effect in two-arm randomized controlled experiments.
 This variance estimate can be used to construct the asymptotically narrowest conservative Wald-type
 confidence interval with the nominal coverage for general regression adjusted estimators for the
-treatment effect.
-}
-\details{
-Additional details...
+treatment effect. For more details, see \href{https://arxiv.org/abs/2411.00191}{(Mikhaeil and Green, 2024)}
 }

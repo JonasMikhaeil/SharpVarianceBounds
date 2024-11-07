@@ -1,4 +1,4 @@
-#' Estimation of Sharp Variance Bounds for two-arm Randomized Controlled 
+#' Estimation of Sharp Variance Bounds for Randomized Controlled 
 #' Experiments. 
 #' 
 #' @description
@@ -7,14 +7,12 @@
 #' effect in two-arm randomized controlled experiments. 
 #' This variance estimate can be used to construct the asymptotically narrowest conservative Wald-type 
 #' confidence interval with the nominal coverage for general regression adjusted estimators for the 
-#' treatment effect.
-#' @details
-#' Additional details...
+#' treatment effect. For more details, see [(Mikhaeil and Green, 2024)](https://arxiv.org/abs/2411.00191)
 #' 
-#' @param r_obs The residuals of the outcome model,i.e,\eqn{Y_i(q) - \hat f_q(X_i)}.
+#' @param r_obs The residuals of the outcome model \eqn{Y_i(q) - \hat f_q(X_i)}.
 #' @param Z Vector of the treatment assignment.
 #' @param upper Logical argument: Determines if upper (TRUE) or lower (FALSE) bounds will be calculated.
-#' @return estimate of upper or lower sharp variance bound
+#' @return Estimate of upper or lower sharp variance bound
 #' @export
 sharpvar <- function(r_obs, Z, upper=TRUE){
   helper_var <- function(x){
@@ -44,9 +42,9 @@ sharpvar <- function(r_obs, Z, upper=TRUE){
 }
 #' Calculates (Neyman's) conventional variance estimator. 
 #' 
-#' @param r_obs The residuals of the outcome model,i.e, $Y_i(q) - \hat f_q(X_i)$.
+#' @param r_obs The residuals of the outcome model \eqn{Y_i(q) - \hat f_q(X_i)}.
 #' @param Z Vector of the treatment assignment.
-#' @return conventional variance estimator
+#' @return Conventional variance estimator
 #' @export
 neyman_conventional <- function(r_obs,Z){
   r_t <- r_obs[Z>0] 
@@ -64,7 +62,7 @@ neyman_conventional <- function(r_obs,Z){
 }
 #' Calculates Neyman's variance estimator based on the Cauchy-Schwarz Inequality. 
 #' 
-#' @param r_obs The residuals of the outcome model,i.e, $Y_i(q) - \hat f_q(X_i)$.
+#' @param r_obs The residuals of the outcome model \eqn{Y_i(q) - \hat f_q(X_i)}.
 #' @param Z Vector of the treatment assignment.
 #' @return Neyman's Cauchy-Schwarz variance estimator
 #' @export

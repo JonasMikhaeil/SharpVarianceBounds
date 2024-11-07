@@ -21,7 +21,13 @@ library(latex2exp)
 set.seed(123)
 ```
 
-### Simple showcase of sharp variance bounds
+## [Sharp Bounds on the Variance of General Regression Adjustment in Randomized Experiments](https://arxiv.org/pdf/2411.00191)
+
+In this vignette, we are going to illustrate how to use our sharp variance bound package and illustrate the benefits of sharp variance bounds more generally.
+
+## 1) Simple Showcase of Sharp Variance Bounds
+
+In this section, we simulate data that showcases the benefits of sharp variance bounds. The simulation is outlined in Section 4. of ([Mikhaeil and Green, 2024](https://arxiv.org/pdf/2411.00191)).
 
 ```{r}
 
@@ -50,9 +56,13 @@ print(sharp_var/conventional_var)
 
 ```
 
-## Recreation of plots in (Mikhaeil, Green, 2024)
+## 2) Sweeps
 
-### sweep over simulation parameter
+This section recreates the plots in Section 4 of ([Mikhaeil and Green, 2024](https://arxiv.org/pdf/2411.00191)).
+
+### 2a) Sweep over simulation parameter
+
+Sweeping over the simulation parameter allows to trace out the operation characteristics of sharp variance bounds under different levels of heterogeneity. The extremes $\theta = 0$ and $\theta =1$ correspond to the sharp null and linear dependence between the adjusted potential outcomes, respectively.
 
 ```{r}
 cs_var <- c()
@@ -135,7 +145,9 @@ scale_y_continuous(expand = c(0,0.02),limits=c(0,15))
 
 ```
 
-### Comparison of asymptotics of the bias for conventional, Cauchy-Schwarz and Sharp Variance estimator
+### 2b) Sweep over N
+
+In this section, we compare the asymptotics of the bias for conventional, Cauchy-Schwarz and Sharp Variance estimator under the sharp null.
 
 ```{r}
 sweep_over_N <- function(N_up,noise_level){
