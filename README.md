@@ -10,7 +10,7 @@ The package can be installed with:
 remotes::install_github("JonasMikhaeil/SharpVarianceBounds")
 ```
 ## Usage
-
+The following code block provides a simple example of how this package can be used to calculate sharp variance bounds for linear regression adjustment.
 ```r
 library(sharpvar)
 population <-create_dataset(1000,0.5,1)
@@ -20,6 +20,7 @@ x <- population$X
 dat <- randomize(Y0,Y1,x,0.5)
 mod <- lm(Y_obs ~ treatment*I(X-mean(X)) , data=dat)
 sharp_var <-sharpvar(mod$residuals,dat$treatment,upper=TRUE)
-```r
+```
 
-See vignette for examples.  
+The provided vignette reproduces the plots of [(Mikhaeil and Green, 2024)](https://arxiv.org/abs/2411.00191).
+ 
