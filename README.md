@@ -5,23 +5,21 @@ This package provides a consistent estimate of the sharp variance bound for gene
 ## Installation 
 The package can be installed with:
 
-`
-#install.packages("remotes")
+```r
+#install.packages("remotes") 
 remotes::install_github("JonasMikhaeil/SharpVarianceBounds")
-`
+```
 ## Usage
 
-`
+```r
 library(sharpvar)
 population <-create_dataset(1000,0.5,1)
 Y1 <- population$Y1
 Y0 <- population$Y0
 x <- population$X
-
 dat <- randomize(Y0,Y1,x,0.5)
 mod <- lm(Y_obs ~ treatment*I(X-mean(X)) , data=dat)
-
 sharp_var <-sharpvar(mod$residuals,dat$treatment,upper=TRUE)
-`
+```r
 
 See vignette for examples.  
