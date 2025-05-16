@@ -24,3 +24,4 @@ sharp_var <-sharpvar(mod$residuals,dat$treatment,upper=TRUE)
 
 The provided vignette reproduces the plots of [(Mikhaeil and Green, 2024)](https://arxiv.org/abs/2411.00191).
  
+[Poster presented at ACIC 2025](ACIC_poser.pdf)
